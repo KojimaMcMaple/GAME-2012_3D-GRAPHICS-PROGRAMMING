@@ -69,12 +69,9 @@ GLfloat pitch, yaw;
 int lastX, lastY;
 
 // Texture variables.
-<<<<<<< HEAD
-GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kRoomTexture, kWallTexture, kTowerTexture;
-=======
-GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kWallTexture, kTowerTexture,
+GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kRoomTexture,
+	kWallTexture, kTowerTexture,
 	mTowerRoofTexture, mTowerTexture;
->>>>>>> 947789a4a828588feef35eb82c06267ea6308e96
 GLint width, height, bitDepth;
 
 // Light variables.
@@ -87,12 +84,11 @@ SpotLight sLight(glm::vec3(5.0f, 5.0f, -5.0f),	// Position.
 	50.0f);
 
 // Shapes. Recommend putting in a map
-<<<<<<< HEAD
-Cube kOuterCube(5);
-Cube kInnerCube(1);
-Prism g_prism(24);
-//Plane g_plane;
 Grid kGroundShape(30, 20); // New UV scale parameter. Works with texture now.
+
+Cone roof(24);
+Prism baseUpper(24), baseLower(24);
+
 // MAZE
 const int kMazeHorizontalSize = 304;
 const int kMazeVerticalSize = 318;
@@ -100,17 +96,6 @@ const int kMazeSize = 622;
 Wall kMazeHorizontal[kMazeHorizontalSize];
 Wall kMazeVertical[kMazeVerticalSize];
 glm::vec3 kMazeHorizontalCoords[kMazeHorizontalSize] = {
-=======
-Grid kGroundShape(30, 10); // New UV scale parameter. Works with texture now.
-const int kMazeSize = 500;
-Wall kMaze[kMazeSize];
-
-Cone roof(24);
-Prism baseUpper(24), baseLower(24);
-
-
-glm::vec3 kMazeHorizontalCoors[kMazeSize] = {
->>>>>>> 947789a4a828588feef35eb82c06267ea6308e96
 	//////////ROW #0
 		glm::vec3(0.0f, 0.0f, 0.0f), //00
 		glm::vec3(1.0f, 0.0f, 0.0f), //01
@@ -885,7 +870,7 @@ void LoadTexture() {
 	stbi_image_free(image2);
 
 	// ROOM TEXTURE
-	unsigned char* image3 = stbi_load("TexturesCom_BrickJapanese0071_2_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	unsigned char* image3 = stbi_load("TexturesCom_BrickLargeSpecial0077_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
 	if (!image3) cout << "Unable to load file!" << endl;
 	glGenTextures(1, &kRoomTexture);
 	glBindTexture(GL_TEXTURE_2D, kRoomTexture);
@@ -913,13 +898,8 @@ void LoadTexture() {
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(image4);
 
-<<<<<<< HEAD
-	// TOWER TEXTURE
-=======
-
 
 	// TOWER TEXTURE 1
->>>>>>> 947789a4a828588feef35eb82c06267ea6308e96
 	unsigned char* image5 = stbi_load("TexturesCom_BrickOldOvergrown0006_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
 	if (!image5) cout << "Unable to load file!" << endl;
 	glGenTextures(1, &kTowerTexture);
@@ -1359,6 +1339,7 @@ void clean()
 	cout << "Cleaning up!" << endl;
 	glDeleteTextures(1, &kGroundTexture);
 	glDeleteTextures(1, &kHedgeTexture);
+	glDeleteTextures(1, &kRoomTexture);
 	glDeleteTextures(1, &kBlankTexture);
 }
 
