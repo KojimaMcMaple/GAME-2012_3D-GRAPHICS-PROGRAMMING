@@ -18,7 +18,7 @@
     <ClCompile Include="LoadShaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GAME2012_Final_LeTrung.cpp">
+    <ClCompile Include="GAME2012_Final_LeTrung_ShuDeng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

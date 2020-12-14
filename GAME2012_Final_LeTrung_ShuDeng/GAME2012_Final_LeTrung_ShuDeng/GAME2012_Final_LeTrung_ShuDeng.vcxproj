@@ -85,7 +85,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GAME2012_Final_LeTrung.cpp" />
+    <ClCompile Include="GAME2012_Final_LeTrung_ShuDeng.cpp" />
     <ClCompile Include="LoadShaders.cpp" />
   </ItemGroup>
   <ItemGroup>
