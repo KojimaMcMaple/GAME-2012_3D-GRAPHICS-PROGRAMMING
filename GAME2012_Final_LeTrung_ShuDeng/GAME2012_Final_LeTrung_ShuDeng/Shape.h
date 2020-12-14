@@ -537,10 +537,22 @@ struct Prism : public Shape
 		shape_indices.push_back(0);
 		shape_indices.push_back(1);
 		shape_indices.push_back(sides);
-		for (int i = 0; i < shape_vertices.size(); i += 3)
+		// UVs
+		// Top face.
+		shape_uvs.push_back(0.0f);
+		shape_uvs.push_back(0.0f);
+		for (int i = 0; i < sides; ++i)
 		{
-			shape_uvs.push_back(0); // No texture for grid so value doesn't matter.
-			shape_uvs.push_back(0);
+			shape_uvs.push_back(static_cast<GLfloat>(i)/ sides);
+			shape_uvs.push_back(1.0f);
+		}
+		// Bottom face.
+		shape_uvs.push_back(0.0f);
+		shape_uvs.push_back(0.0f);
+		for (int i = 0; i < sides; ++i)
+		{
+			shape_uvs.push_back(static_cast<GLfloat>(i) / sides);
+			shape_uvs.push_back(0.0f);
 		}
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
@@ -586,6 +598,17 @@ struct Cone : public Shape
 		shape_indices.push_back(sides);
 		shape_indices.push_back(sides + 1);
 		shape_indices.push_back(1);
+		// UVs
+		shape_uvs.push_back(0.0f);
+		shape_uvs.push_back(0.0f);
+		for (int i = 0; i < sides; i++)
+		{
+			shape_uvs.push_back(static_cast<GLfloat>(i) / sides);
+			shape_uvs.push_back(0.0f);
+		}
+		// Top Point
+		shape_uvs.push_back(0.5f);
+		shape_uvs.push_back(1.0f);
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
 	}

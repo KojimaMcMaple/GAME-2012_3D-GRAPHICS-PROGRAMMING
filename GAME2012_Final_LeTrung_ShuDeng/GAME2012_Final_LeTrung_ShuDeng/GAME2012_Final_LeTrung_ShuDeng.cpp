@@ -69,7 +69,8 @@ GLfloat pitch, yaw;
 int lastX, lastY;
 
 // Texture variables.
-GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kWallTexture, kTowerTexture;
+GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kWallTexture, kTowerTexture,
+	mTowerRoofTexture, mTowerTexture;
 GLint width, height, bitDepth;
 
 // Light variables.
@@ -82,18 +83,12 @@ SpotLight sLight(glm::vec3(5.0f, 5.0f, -5.0f),	// Position.
 	50.0f);
 
 // Shapes. Recommend putting in a map
-Cube kOuterCube(5);
-Cube kInnerCube(1);
-Prism g_prism(24);
-//Plane g_plane;
 Grid kGroundShape(30, 10); // New UV scale parameter. Works with texture now.
 const int kMazeSize = 500;
 Wall kMaze[kMazeSize];
 
-
-
-
-
+Cone roof(24);
+Prism baseUpper(24), baseLower(24);
 
 
 glm::vec3 kMazeHorizontalCoors[kMazeSize] = {
@@ -291,11 +286,11 @@ void LoadTexture() {
 
 
 
-	// TOWER TEXTURE
+	// TOWER TEXTURE 1
 	unsigned char* image5 = stbi_load("TexturesCom_BrickOldOvergrown0006_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
 	if (!image5) cout << "Unable to load file!" << endl;
 	glGenTextures(1, &kTowerTexture);
-	glBindTexture(GL_TEXTURE_2D, kWallTexture);
+	glBindTexture(GL_TEXTURE_2D, kTowerTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image5);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -304,6 +299,34 @@ void LoadTexture() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(image5);
+
+	// TOWER TEXTURE 2
+	unsigned char* towerTex2 = stbi_load("TexturesCom_BrickOldMixedSize0064_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	if (!towerTex2) cout << "Unable to load file!" << endl;
+	glGenTextures(1, &mTowerTexture);
+	glBindTexture(GL_TEXTURE_2D, mTowerTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, towerTex2);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(towerTex2);
+
+	// TOWER ROOF TEXTURE
+	unsigned char* towerRoofTex = stbi_load("TexturesCom_RooftilesSlate0159_5_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	if (!towerRoofTex) cout << "Unable to load file!" << endl;
+	glGenTextures(1, &mTowerRoofTexture);
+	glBindTexture(GL_TEXTURE_2D, mTowerRoofTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, towerRoofTex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(towerRoofTex);
 
 	glUniform1i(glGetUniformLocation(program, "texture0"), 0);
 }
@@ -370,10 +393,6 @@ void init(void)
 		glGenBuffers(1, &normals_vbo);
 
 	glBindVertexArray(0); // Can optionally unbind the vertex array to avoid modification.
-
-	// Change shape data.
-	g_prism.SetMat(0.1, 16);
-	kGroundShape.SetMat(0.0, 16);
 
 	// CHANGE BG COLOR
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
@@ -456,16 +475,6 @@ void display(void)
 	glDrawElements(GL_TRIANGLES, kGroundShape.NumIndices(), GL_UNSIGNED_SHORT, 0);
 
 	glUniform3f(glGetUniformLocation(program, "sLight.position"), sLight.position.x, sLight.position.y, sLight.position.z);
-
-	glBindTexture(GL_TEXTURE_2D, kBlankTexture);
-	g_prism.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(2.0f, 2.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(4.0f, 0.0f, -6.0f));
-	glDrawElements(GL_TRIANGLES, g_prism.NumIndices(), GL_UNSIGNED_SHORT, 0);
-
-	glBindTexture(GL_TEXTURE_2D, kWallTexture);
-	kInnerCube.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(0.0f, 0.0f, 0.0f));
-	glDrawElements(GL_TRIANGLES, kInnerCube.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	
 	float x_offset = 3.0f;
 	for (int i = 0; i < kMazeSize; i++) {
@@ -475,11 +484,43 @@ void display(void)
 		glDrawElements(GL_TRIANGLES, kMaze[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
 
-	glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
-	kOuterCube.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(2.0f, 2.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(5.0, 3.0f, -5.0));
-	glDrawElements(GL_TRIANGLES, kOuterCube.NumIndices(), GL_UNSIGNED_SHORT, 0);
-	
+	//Towers
+	glBindTexture(GL_TEXTURE_2D, mTowerRoofTexture);
+	roof.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(2.0f, 1.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(-1.0f, 3.0f, -1.0f));
+	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(2.0f, 1.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(29.0f, 3.0f, -1.0f));
+	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(2.0f, 1.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(-1.0f, 3.0f, -31.0f));
+	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(2.0f, 1.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(29.0f, 3.0f, -31.0f));
+	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
+
+	glBindTexture(GL_TEXTURE_2D, mTowerTexture);
+	baseUpper.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(-0.75f, 2.0f, -0.75f));
+	glDrawElements(GL_TRIANGLES, baseUpper.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(29.25f, 2.0f, -0.75f));
+	glDrawElements(GL_TRIANGLES, baseUpper.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(-0.75f, 2.0f, -30.75f));
+	glDrawElements(GL_TRIANGLES, baseUpper.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(29.25f, 2.0f, -30.75f));
+	glDrawElements(GL_TRIANGLES, baseUpper.NumIndices(), GL_UNSIGNED_SHORT, 0);
+
+	glBindTexture(GL_TEXTURE_2D, kTowerTexture);
+	baseLower.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(-0.5f, 0.0f, -0.5f));
+	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(29.5f, 0.0f, -0.5f));
+	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(-0.5f, 0.0f, -30.5f));
+	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(29.5f, 0.0f, -30.5f));
+	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
+
+
+
+
 	glBindVertexArray(0); // Done writing.
 	glutSwapBuffers(); // Now for a potentially smoother render.
 }
