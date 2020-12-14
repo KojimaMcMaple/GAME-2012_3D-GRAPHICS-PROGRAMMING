@@ -1,7 +1,7 @@
 #version 430 core
 
 #ifndef NUM_POINT_LIGHTS
-    #define NUM_POINT_LIGHTS 2
+    #define NUM_POINT_LIGHTS 8
 #endif
 
 in vec3 colour;
@@ -123,6 +123,8 @@ void main()
 	
 	vec4 ambient = vec4(aLight.ambientColour, 1.0f) * aLight.ambientStrength;
 	calcColour += ambient;
+	for (int i = 0; i < NUM_POINT_LIGHTS; i++)
+		calcColour += calcPointLight(pLights[i]);
 	calcColour += calcSpotLight(sLight);
 	
 	frag_colour = texture(texture0, texCoord) * vec4(colour, 1.0f) * calcColour;
