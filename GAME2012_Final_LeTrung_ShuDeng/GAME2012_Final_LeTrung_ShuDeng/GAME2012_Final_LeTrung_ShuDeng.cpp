@@ -24,7 +24,7 @@ using namespace std;
 #include "stb_image.h"
 
 #define FPS 60
-#define MOVESPEED 0.1f
+#define MOVESPEED 0.2f
 #define TURNSPEED 0.05f
 #define X_AXIS glm::vec3(1,0,0)
 #define Y_AXIS glm::vec3(0,1,0)
@@ -90,11 +90,12 @@ Cone roof(24);
 Prism baseUpper(24), baseLower(24);
 
 // MAZE
+const float kMazeWallThickness = 0.2f;
 const int kMazeHorizontalSize = 304;
 const int kMazeVerticalSize = 318;
 const int kMazeSize = 622;
-Wall kMazeHorizontal[kMazeHorizontalSize];
-Wall kMazeVertical[kMazeVerticalSize];
+Wall *kMazeHorizontal = new Wall[kMazeHorizontalSize];
+Wall *kMazeVertical = new Wall[kMazeVerticalSize];
 glm::vec3 kMazeHorizontalCoords[kMazeHorizontalSize] = {
 	//////////ROW #0
 		glm::vec3(0.0f, 0.0f, 0.0f), //00
@@ -775,13 +776,14 @@ glm::vec3 kMazeVerticalCoords[kMazeVerticalSize] = {
 };
 
 // MAZE ROOM
+const float kMazeRoomWallThickness = 0.2f;
 const int kMazeRoomHorizontalSize = 10;
 const int kMazeRoomVerticalSize = 4;
 const int kMazeRoomSize = 14;
-Wall kMazeRoomHorizontal[kMazeRoomHorizontalSize];
-Wall kMazeRoomVertical[kMazeRoomVerticalSize];
-Wall kMazeRoomInnerHorizontal[kMazeRoomHorizontalSize];
-Wall kMazeRoomInnerVertical[kMazeRoomVerticalSize];
+Wall *kMazeRoomHorizontal = new Wall[kMazeRoomHorizontalSize];
+Wall *kMazeRoomVertical = new Wall[kMazeRoomVerticalSize];
+Wall *kMazeRoomRoof = new Wall[kMazeRoomHorizontalSize];
+Wall *kMazeRoomFloor = new Wall[kMazeRoomHorizontalSize];
 glm::vec3 kMazeRoomHorizontalCoords[kMazeRoomHorizontalSize] = {
 	//////////ROW #11
 		glm::vec3(10.0f, 0.0f, -11.0f), //10
@@ -813,10 +815,10 @@ void timer(int);
 
 void resetView()
 {
-	position = glm::vec3(15.0f, 3.0f, 10.0f);
+	position = glm::vec3(15.0f, 15.0f, 0.0f);
 	frontVec = glm::vec3(0.0f, 0.0f, -1.0f);
 	worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	pitch = 0.0f;
+	pitch = -30.0f;
 	yaw = -90.0f;
 	// View will now get set only in transformObject
 }
@@ -870,8 +872,8 @@ void LoadTexture() {
 	stbi_image_free(image2);
 
 	// ROOM TEXTURE
-	unsigned char* image3 = stbi_load("TexturesCom_BrickLargeSpecial0077_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
-	if (!image3) cout << "Unable to load file!" << endl;
+	unsigned char* image3 = stbi_load("TexturesCom_BrickJapanese0071_2_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	if (!image3) cout << "Unable to load ROOM TEXTURE file!" << endl;
 	glGenTextures(1, &kRoomTexture);
 	glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image3);
@@ -1024,7 +1026,23 @@ void init(void)
 	//glFrontFace(GL_CCW);
 	//glCullFace(GL_BACK);
 
+	// MAZE SETTINGS
+	for (int i = 0; i < kMazeHorizontalSize; i++) {
+		kMazeHorizontal[i] = Wall(kMazeWallThickness, 1);
+	}
+	for (int i = 0; i < kMazeVerticalSize; i++) {
+		kMazeVertical[i] = Wall(kMazeWallThickness, 1);
+	}
+
+	for (int i = 0; i < kMazeRoomHorizontalSize; i++) {
+		kMazeRoomHorizontal[i] = Wall(kMazeRoomWallThickness, 1);
+	}
+	for (int i = 0; i < kMazeRoomVerticalSize; i++) {
+		kMazeRoomVertical[i] = Wall(kMazeRoomWallThickness, 1);
+	}
+
 	timer(0);
+
 }
 
 //---------------------------------------------------------------------
@@ -1068,70 +1086,63 @@ void transformObject(glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngl
 //
 // display
 //
-void display(void)
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glBindVertexArray(vao);
-	// Draw all shapes.
-
-	/*glBindTexture(GL_TEXTURE_2D, alexTx);
-	g_plane.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(10.0f, 10.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
-	glDrawElements(GL_TRIANGLES, g_plane.NumIndices(), GL_UNSIGNED_SHORT, 0);*/
-
-	//glEnable(GL_DEPTH_TEST);
-
-	glBindTexture(GL_TEXTURE_2D, kGroundTexture);
-	kGroundShape.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
-	glDrawElements(GL_TRIANGLES, kGroundShape.NumIndices(), GL_UNSIGNED_SHORT, 0);
-
-	glUniform3f(glGetUniformLocation(program, "sLight.position"), sLight.position.x, sLight.position.y, sLight.position.z);
+void DisplayMaze(float x_offset = 0.0f, float z_offset = 0.0f) {
 	
-	// MAZE
-	float x_offset = 3.0f; //spacing for castle walls
-	float z_offset = 3.0f; //spacing for castle walls
 	for (int i = 0; i < kMazeHorizontalSize; i++) {
 		float z_local_offset = 0.0f; // value is half thickness of wall, to center wall
 		glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
 		kMazeHorizontal[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(kMazeHorizontalCoords[i].x + x_offset, 
-																			kMazeHorizontalCoords[i].y, 
-																			kMazeHorizontalCoords[i].z - z_offset - z_local_offset));
+		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(kMazeHorizontalCoords[i].x + x_offset,
+			kMazeHorizontalCoords[i].y,
+			kMazeHorizontalCoords[i].z + z_offset + z_local_offset));
 		glDrawElements(GL_TRIANGLES, kMazeHorizontal[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
 	for (int i = 0; i < kMazeVerticalSize; i++) {
-		float x_local_offset = 0.1f; // value is half thickness of wall, to center wall
+		float x_local_offset = -kMazeWallThickness / 2; // value is half thickness of wall, to center wall
 		glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
 		kMazeVertical[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), Y_AXIS, 90.0f, glm::vec3(kMazeVerticalCoords[i].x + x_offset - x_local_offset,
-																			kMazeVerticalCoords[i].y, 
-																			kMazeVerticalCoords[i].z - z_offset));
+		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), Y_AXIS, 90.0f, glm::vec3(kMazeVerticalCoords[i].x + x_offset + x_local_offset,
+			kMazeVerticalCoords[i].y,
+			kMazeVerticalCoords[i].z + z_offset));
 		glDrawElements(GL_TRIANGLES, kMazeVertical[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
+}
 
-	// MAZE ROOM
+void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
+	float scale = 1.25f;
 	for (int i = 0; i < kMazeRoomHorizontalSize; i++) {
-		float z_local_offset = 0.0f; // value is half thickness of wall, to center wall
+		float z_local_offset = 0.0f; // offset to prevent overlaps, vertical maze walls are centered
 		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomHorizontal[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-		transformObject(glm::vec3(1.0f, 1.0f, 0.5f), X_AXIS, 0.0f, glm::vec3(kMazeRoomHorizontalCoords[i].x + x_offset,
+		if (i < (kMazeRoomHorizontalSize >> 1)) { //bottom walls 
+			z_local_offset = -kMazeWallThickness; //-0.2
+		}
+		else { //top walls
+			z_local_offset = kMazeWallThickness; //0.2
+		}
+		transformObject(glm::vec3(1.0f, scale, 1.0f), X_AXIS, 0.0f, glm::vec3(kMazeRoomHorizontalCoords[i].x + x_offset,
 			kMazeRoomHorizontalCoords[i].y,
-			kMazeRoomHorizontalCoords[i].z - z_offset - z_local_offset));
+			kMazeRoomHorizontalCoords[i].z + z_offset + z_local_offset));
 		glDrawElements(GL_TRIANGLES, kMazeRoomHorizontal[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
 	for (int i = 0; i < kMazeRoomVerticalSize; i++) {
-		float x_local_offset = 0.1f; // value is half thickness of wall, to center wall
+		float x_local_offset = 0.0f; // value is half thickness of wall, to center wall
 		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomVertical[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-		transformObject(glm::vec3(1.0f, 1.0f, 0.5f), Y_AXIS, 90.0f, glm::vec3(kMazeRoomVerticalCoords[i].x + x_offset - x_local_offset,
+		if (i < (kMazeRoomVerticalSize >> 1)) { //left walls 
+			x_local_offset = kMazeWallThickness / 2; //-0.2
+		}
+		else { //right walls
+			x_local_offset = -kMazeWallThickness - kMazeWallThickness / 2; //0.2
+		}
+		transformObject(glm::vec3(1.0f, scale, 1.0f), Y_AXIS, 90.0f, glm::vec3(kMazeRoomVerticalCoords[i].x + x_offset + x_local_offset,
 			kMazeRoomVerticalCoords[i].y,
-			kMazeRoomVerticalCoords[i].z - z_offset));
+			kMazeRoomVerticalCoords[i].z + z_offset));
 		glDrawElements(GL_TRIANGLES, kMazeRoomVertical[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
+}
 
-	//Towers
+void DisplayTowers() {
 	glBindTexture(GL_TEXTURE_2D, mTowerRoofTexture);
 	roof.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 	transformObject(glm::vec3(2.0f, 1.0f, 2.0f), X_AXIS, 0.0f, glm::vec3(-1.0f, 3.0f, -1.0f));
@@ -1164,6 +1175,39 @@ void display(void)
 	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(29.5f, 0.0f, -30.5f));
 	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
+}
+
+void display(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindVertexArray(vao);
+	// Draw all shapes.
+
+	/*glBindTexture(GL_TEXTURE_2D, alexTx);
+	g_plane.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(10.0f, 10.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
+	glDrawElements(GL_TRIANGLES, g_plane.NumIndices(), GL_UNSIGNED_SHORT, 0);*/
+
+	//glEnable(GL_DEPTH_TEST);
+
+	glBindTexture(GL_TEXTURE_2D, kGroundTexture);
+	kGroundShape.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
+	glDrawElements(GL_TRIANGLES, kGroundShape.NumIndices(), GL_UNSIGNED_SHORT, 0);
+
+	glUniform3f(glGetUniformLocation(program, "sLight.position"), sLight.position.x, sLight.position.y, sLight.position.z);
+	
+	// MAZE
+	float x_offset = 3.0f; //spacing for castle walls
+	float z_offset = -3.0f; //spacing for castle walls
+	DisplayMaze(x_offset, z_offset);
+
+	// MAZE ROOM
+	DisplayMazeRoom(x_offset, z_offset);
+
+	// TOWERS
+	DisplayTowers();
 
 
 
@@ -1337,10 +1381,23 @@ void mouseClick(int btn, int state, int x, int y)
 void clean()
 {
 	cout << "Cleaning up!" << endl;
+	
+	glDeleteTextures(1, &kBlankTexture);
 	glDeleteTextures(1, &kGroundTexture);
 	glDeleteTextures(1, &kHedgeTexture);
 	glDeleteTextures(1, &kRoomTexture);
-	glDeleteTextures(1, &kBlankTexture);
+	glDeleteTextures(1, &kWallTexture);
+	glDeleteTextures(1, &kTowerTexture);
+	glDeleteTextures(1, &mTowerRoofTexture);
+	glDeleteTextures(1, &mTowerTexture);
+
+	delete[] kMazeHorizontal;
+	delete[] kMazeVertical;
+
+	delete[] kMazeRoomHorizontal;
+	delete[] kMazeRoomVertical;
+	delete[] kMazeRoomRoof;
+	delete[] kMazeRoomFloor;
 }
 
 //---------------------------------------------------------------------

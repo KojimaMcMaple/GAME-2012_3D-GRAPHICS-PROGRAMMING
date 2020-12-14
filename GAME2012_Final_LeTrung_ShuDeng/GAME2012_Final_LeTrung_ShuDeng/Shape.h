@@ -377,7 +377,7 @@ struct Cube : public Shape
 
 struct Wall : public Shape
 {
-	Wall(int scale = 1)
+	Wall(float depth = 0.2f, int scale = 1)
 	{
 		shape_indices = {
 			// Front.
@@ -399,7 +399,6 @@ struct Wall : public Shape
 			20, 21, 22,
 			22, 23, 20
 		};
-		float depth = 0.2f;
 		shape_vertices = {
 			// Front.
 			0.0f, 0.0f, depth,		// 0.
