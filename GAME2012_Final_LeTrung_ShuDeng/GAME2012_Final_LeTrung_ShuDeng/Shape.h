@@ -612,3 +612,82 @@ struct Cone : public Shape
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
 	}
 };
+
+struct Crystal : public Shape
+{
+	Crystal(int scale = 1)
+	{
+		shape_indices = {
+			// Front.
+			0, 1, 2,
+			// Left Front
+			0,3,4,
+			// Left Back
+			0,5,6,
+			// Back
+			0,7,8,
+			// Right Back
+			0,9,10,
+			// Right Front
+			0,11,12,
+			
+			// Front.
+			13, 1, 2,
+			// Left Front
+			13,3,4,
+			// Left Back
+			13,5,6,
+			// Back
+			13,7,8,
+			// Right Back
+			13,9,10,
+			// Right Front
+			13,11,12
+		};
+		shape_vertices = {
+			// Top
+			0.0f, 3.0f, 0.0f,		// 0.
+			// Front
+			1.0f, 0.0f, 1.732f,		// 1.
+			-1.0f, 0.0f, 1.732f,		// 2.
+			// Left Front
+			-1.0f, 0.0f, 1.732f,		// 2. 3
+			-2.0f, 0.0f, -0.0f,		// 3. 4
+			// Left Back
+			-2.0f, 0.0f, -0.0f,		// 3. 5
+			-1.0f, 0.0f, -1.732f,		// 4. 6
+			// Back
+			-1.0f, 0.0f, -1.732f,		// 4. 7
+			1.0f, 0.0f, -1.732f,		// 5. 8
+			// Right Back
+			1.0f, 0.0f, -1.732f,		// 5. 9
+			2.0f, 0.0f, 0.0f,		// 6. 10
+			// Right Front
+			2.0f, 0.0f, 0.0f,		// 6. 11
+			1.0f, 0.0f, 1.732f,		// 1. 12
+			// Bottom
+			0.0f, -3.0f, 0.0f,		// 7. 13
+	};
+	shape_uvs = {
+		0.5f,1.0f, //0
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		1.0f,0.0f, //1
+		0.0f,0.0f, //2
+		0.5f,1.0f, //0
+
+	};
+	for (unsigned i = 0; i < shape_uvs.size(); i++)
+		shape_uvs[i] *= scale;
+	ColorShape(1.0f, 1.0f, 1.0f);
+	CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
+}
+};

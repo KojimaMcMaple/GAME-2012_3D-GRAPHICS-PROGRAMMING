@@ -69,9 +69,9 @@ GLfloat pitch, yaw;
 int lastX, lastY;
 
 // Texture variables.
-GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kRoomTexture,
-	kWallTexture, kTowerTexture,
-	mTowerRoofTexture, mTowerTexture;
+GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kRoomTexture, kCrystalTexture,
+kWallTexture, kTowerTexture,
+mTowerRoofTexture, mTowerTexture;
 GLint width, height, bitDepth;
 
 // Light variables.
@@ -88,7 +88,7 @@ PointLight pLights[kPointLightSize] = { { glm::vec3(6.0f, 1.25f, -6.0f), 10.0f, 
 										{ glm::vec3(15.0f, 1.0f, -27.0f), 5.0f, glm::vec3(0.0f, 1.0f, 0.0f), 7.0f },
 										{ glm::vec3(4.0f, 1.25f, -15.0f), 5.0f, glm::vec3(0.78f, 0.14f, 0.69f), 5.0f },
 										{ glm::vec3(26.0f, 1.25f, -15.0f), 5.0f, glm::vec3(0.08f, 0.96f, 0.93f), 5.0f },
-										};
+};
 
 SpotLight sLight(glm::vec3(15.5f, 5.0f, -15.5f),	// Position.
 	glm::vec3(1.0f, 0.72f, 0.1f),	// Diffuse colour.
@@ -98,17 +98,29 @@ SpotLight sLight(glm::vec3(15.5f, 5.0f, -15.5f),	// Position.
 
 // Shapes. Recommend putting in a map
 Grid kGroundShape(30, 20); // New UV scale parameter. Works with texture now.
-
 Cone roof(24);
 Prism baseUpper(24), baseLower(24);
 
+// CRYSTAL KEY
+Crystal kCrystalKey(1);
+float kCrystalRotAngle = 0.0f;
+glm::vec3 kCrystalScale = glm::vec3(0.25f, 0.25f, 0.25f);
+glm::vec3 kCrystalPos = glm::vec3(26.5f, 0.5f, -14.5f);
+bool kIsCrystalActive = true;
+
+// RECEPTOR
+Prism kReceptor(24);
+glm::vec3 kReceptorPos = glm::vec3(15.5f, 0.0f, -15.5f);
+bool kIsReceptorActive = false;
+
 // MAZE
+glm::vec3 kExitPoint = glm::vec3(14.5f, 0.5f, -27.0f);
 const float kMazeWallThickness = 0.2f;
 const int kMazeHorizontalSize = 304;
 const int kMazeVerticalSize = 318;
 const int kMazeSize = 622;
-Wall *kMazeHorizontal = new Wall[kMazeHorizontalSize];
-Wall *kMazeVertical = new Wall[kMazeVerticalSize];
+Wall* kMazeHorizontal = new Wall[kMazeHorizontalSize];
+Wall* kMazeVertical = new Wall[kMazeVerticalSize];
 glm::vec3 kMazeHorizontalCoords[kMazeHorizontalSize] = {
 	//////////ROW #0
 		glm::vec3(0.0f, 0.0f, 0.0f), //00
@@ -794,10 +806,10 @@ const int kMazeRoomHorizontalSize = 10;
 const int kMazeRoomVerticalSize = 4;
 const int kMazeRoomRoofSize = 15;
 const int kMazeRoomSize = 14;
-Wall *kMazeRoomHorizontal = new Wall[kMazeRoomHorizontalSize];
-Wall *kMazeRoomVertical = new Wall[kMazeRoomVerticalSize];
-Wall *kMazeRoomRoof = new Wall[kMazeRoomRoofSize];
-Wall *kMazeRoomFloor = new Wall[kMazeRoomRoofSize];
+Wall* kMazeRoomHorizontal = new Wall[kMazeRoomHorizontalSize];
+Wall* kMazeRoomVertical = new Wall[kMazeRoomVerticalSize];
+Wall* kMazeRoomRoof = new Wall[kMazeRoomRoofSize];
+Wall* kMazeRoomFloor = new Wall[kMazeRoomRoofSize];
 glm::vec3 kMazeRoomHorizontalCoords[kMazeRoomHorizontalSize] = {
 	//////////ROW #11
 		glm::vec3(10.0f, 0.0f, -11.0f), //10
@@ -848,7 +860,7 @@ void timer(int);
 
 void resetView()
 {
-	position = glm::vec3(15.0f, 15.0f, 0.0f);
+	position = glm::vec3(15.0f, 10.0f, 10.0f);
 	frontVec = glm::vec3(0.0f, 0.0f, -1.0f);
 	worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	pitch = -30.0f;
@@ -873,7 +885,7 @@ void LoadTexture() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(image0);
-	
+
 	// GROUND TEXTURE
 	unsigned char* image = stbi_load("TexturesCom_FloorsMedieval0063_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
 	if (!image) cout << "Unable to load file!" << endl;
@@ -918,6 +930,21 @@ void LoadTexture() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(image3);
+
+	// CRYSTAL TEXTURE
+	unsigned char* crystal_tex = stbi_load("alien-skin-organic-seamless-generated-hires-texture-photo.jpg", &width, &height, &bitDepth, 0);
+	if (!crystal_tex) cout << "Unable to load ROOM TEXTURE file!" << endl;
+	glGenTextures(1, &kCrystalTexture);
+	glBindTexture(GL_TEXTURE_2D, kCrystalTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, crystal_tex);
+	// Note: image types with native transparency will need to be GL_RGBA instead of GL_RGB.
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(crystal_tex);
 
 	// WALL TEXTURE
 	unsigned char* image4 = stbi_load("TexturesCom_BrickOldOvergrown0044_4_seamless_S.jpg", &width, &height, &bitDepth, 0);
@@ -1026,42 +1053,42 @@ void init(void)
 	glUniform1f(glGetUniformLocation(program, "pLights[1].constant"), pLights[1].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[1].linear"), pLights[1].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[1].exponent"), pLights[1].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[2].base.diffuseColour"), pLights[2].diffuseColour.x, pLights[2].diffuseColour.y, pLights[2].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[2].base.diffuseStrength"), pLights[2].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[2].position"), pLights[2].position.x, pLights[2].position.y, pLights[2].position.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[2].constant"), pLights[2].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[2].linear"), pLights[2].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[2].exponent"), pLights[2].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[3].base.diffuseColour"), pLights[3].diffuseColour.x, pLights[3].diffuseColour.y, pLights[3].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[3].base.diffuseStrength"), pLights[3].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[3].position"), pLights[3].position.x, pLights[3].position.y, pLights[3].position.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[3].constant"), pLights[3].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[3].linear"), pLights[3].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[3].exponent"), pLights[3].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[4].base.diffuseColour"), pLights[4].diffuseColour.x, pLights[4].diffuseColour.y, pLights[4].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[4].base.diffuseStrength"), pLights[4].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[4].position"), pLights[4].position.x, pLights[4].position.y, pLights[4].position.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[4].constant"), pLights[4].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[4].linear"), pLights[4].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[4].exponent"), pLights[4].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[5].base.diffuseColour"), pLights[5].diffuseColour.x, pLights[5].diffuseColour.y, pLights[5].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[5].base.diffuseStrength"), pLights[5].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[5].position"), pLights[5].position.x, pLights[5].position.y, pLights[5].position.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[5].constant"), pLights[5].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[5].linear"), pLights[5].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[5].exponent"), pLights[5].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[6].base.diffuseColour"), pLights[6].diffuseColour.x, pLights[6].diffuseColour.y, pLights[6].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[6].base.diffuseStrength"), pLights[6].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[6].position"), pLights[6].position.x, pLights[6].position.y, pLights[6].position.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[6].constant"), pLights[6].constant);
 	glUniform1f(glGetUniformLocation(program, "pLights[6].linear"), pLights[6].linear);
 	glUniform1f(glGetUniformLocation(program, "pLights[6].exponent"), pLights[6].exponent);
-	
+
 	glUniform3f(glGetUniformLocation(program, "pLights[7].base.diffuseColour"), pLights[7].diffuseColour.x, pLights[7].diffuseColour.y, pLights[7].diffuseColour.z);
 	glUniform1f(glGetUniformLocation(program, "pLights[7].base.diffuseStrength"), pLights[7].diffuseStrength);
 	glUniform3f(glGetUniformLocation(program, "pLights[7].position"), pLights[7].position.x, pLights[7].position.y, pLights[7].position.z);
@@ -1082,20 +1109,20 @@ void init(void)
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-		ibo = 0;
-		glGenBuffers(1, &ibo);
-	
-		points_vbo = 0;
-		glGenBuffers(1, &points_vbo);
+	ibo = 0;
+	glGenBuffers(1, &ibo);
 
-		colors_vbo = 0;
-		glGenBuffers(1, &colors_vbo);
+	points_vbo = 0;
+	glGenBuffers(1, &points_vbo);
 
-		uv_vbo = 0;
-		glGenBuffers(1, &uv_vbo);
+	colors_vbo = 0;
+	glGenBuffers(1, &colors_vbo);
 
-		normals_vbo = 0;
-		glGenBuffers(1, &normals_vbo);
+	uv_vbo = 0;
+	glGenBuffers(1, &uv_vbo);
+
+	normals_vbo = 0;
+	glGenBuffers(1, &normals_vbo);
 
 	glBindVertexArray(0); // Can optionally unbind the vertex array to avoid modification.
 
@@ -1107,7 +1134,7 @@ void init(void)
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	// Enable smoothing.
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POLYGON_SMOOTH);
@@ -1143,6 +1170,14 @@ void init(void)
 
 //---------------------------------------------------------------------
 //
+// Distance Check
+//
+//glm::vec3 GetDistance(glm::vec3 source_pos, glm::vec3 dest_pos) {
+//	
+//}
+
+//---------------------------------------------------------------------
+//
 // calculateView
 //
 void calculateView()
@@ -1171,7 +1206,7 @@ void transformObject(glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngl
 	Model = glm::translate(Model, translation);
 	Model = glm::rotate(Model, glm::radians(rotationAngle), rotationAxis);
 	Model = glm::scale(Model, scale);
-	
+
 	calculateView();
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(viewID, 1, GL_FALSE, &View[0][0]);
@@ -1182,8 +1217,15 @@ void transformObject(glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngl
 //
 // display
 //
+void DisplayGround() {
+	glBindTexture(GL_TEXTURE_2D, kGroundTexture);
+	kGroundShape.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
+	glDrawElements(GL_TRIANGLES, kGroundShape.NumIndices(), GL_UNSIGNED_SHORT, 0);
+}
+
 void DisplayMaze(float x_offset = 0.0f, float z_offset = 0.0f) {
-	
+
 	for (int i = 0; i < kMazeHorizontalSize; i++) {
 		float z_local_offset = 0.0f; // value is half thickness of wall, to center wall
 		glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
@@ -1238,7 +1280,7 @@ void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
 		glDrawElements(GL_TRIANGLES, kMazeRoomVertical[i].NumIndices(), GL_UNSIGNED_SHORT, 0);
 	}
 	for (int i = 0; i < kMazeRoomRoofSize; i++) {
-		float z_local_offset = kMazeRoomWallThickness/2; // offset to prevent overlaps, vertical maze walls are centered
+		float z_local_offset = kMazeRoomWallThickness / 2; // offset to prevent overlaps, vertical maze walls are centered
 		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomRoof[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(kMazeRoomRoofCoords[i].x + x_offset,
@@ -1292,6 +1334,22 @@ void DisplayTowers() {
 	glDrawElements(GL_TRIANGLES, baseLower.NumIndices(), GL_UNSIGNED_SHORT, 0);
 }
 
+void DisplayCrystal() {
+	glBindTexture(GL_TEXTURE_2D, kCrystalTexture);
+	kCrystalKey.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	kCrystalRotAngle += 1.0f;
+	transformObject(kCrystalScale, Y_AXIS, kCrystalRotAngle, kCrystalPos);
+	//transformObject(glm::vec3(1.0f, 1.0f, 1.0f), Y_AXIS, kCrystalRotAngle, glm::vec3(26.5f, 0.5f, 3.0f));
+	glDrawElements(GL_TRIANGLES, kCrystalKey.NumIndices(), GL_UNSIGNED_SHORT, 0);
+}
+
+void DisplayReceptor(){
+	glBindTexture(GL_TEXTURE_2D, kBlankTexture);
+	kReceptor.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(0.5f, 0.5f, 0.5f), Y_AXIS, 0.0f, kReceptorPos);
+	glDrawElements(GL_TRIANGLES, kReceptor.NumIndices(), GL_UNSIGNED_SHORT, 0);
+}
+
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1306,13 +1364,11 @@ void display(void)
 
 	//glEnable(GL_DEPTH_TEST);
 
-	glBindTexture(GL_TEXTURE_2D, kGroundTexture);
-	kGroundShape.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(0.0f, 0.0f, 0.0f));
-	glDrawElements(GL_TRIANGLES, kGroundShape.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	// GROUND
+	DisplayGround();
 
 	glUniform3f(glGetUniformLocation(program, "sLight.position"), sLight.position.x, sLight.position.y, sLight.position.z);
-	
+
 	// MAZE
 	float x_offset = 3.0f; //spacing for castle walls
 	float z_offset = -3.0f; //spacing for castle walls
@@ -1324,10 +1380,38 @@ void display(void)
 	// TOWERS
 	DisplayTowers();
 
-
-
+	// CRYSTAL
+	if (kIsCrystalActive || kIsReceptorActive) {
+		DisplayCrystal();
+	}
+	
+	// RECEPTOR
+	DisplayReceptor();
 
 	glBindVertexArray(0); // Done writing.
+
+	// UPDATE LOOP
+	if (kIsCrystalActive && !kIsReceptorActive) {
+		if (glm::distance(position, kExitPoint) < 1.0f) {
+			cout << ">>> Voice of Kos: You cannot exit the maze!" << endl;
+		}
+	}
+	if (kIsCrystalActive) {
+		if (glm::distance(position, kCrystalPos) < 1.0f) {
+			kIsCrystalActive = false;
+			cout << ">>> Voice of Kos: Crystal collected..." << endl;
+		}
+	}
+	if (!kIsCrystalActive && !kIsReceptorActive) {
+		if (glm::distance(position, kReceptorPos) < 1.0f) {
+			kIsReceptorActive = true;
+			kCrystalPos = kReceptorPos;
+			kCrystalPos.y = 0.75f;
+			kCrystalScale = glm::vec3(0.1f, 0.1f, 0.1f);
+			cout << ">>> Voice of Kos: Gate has been unlocked!" << endl;
+		}
+	}
+
 	glutSwapBuffers(); // Now for a potentially smoother render.
 }
 
@@ -1361,7 +1445,7 @@ void parseKeys()
 void timer(int) { // essentially our update()
 	parseKeys();
 	glutPostRedisplay();
-	glutTimerFunc(1000/FPS, timer, 0); // 60 FPS or 16.67ms.
+	glutTimerFunc(1000 / FPS, timer, 0); // 60 FPS or 16.67ms.
 }
 
 //---------------------------------------------------------------------
@@ -1391,7 +1475,7 @@ void keyDown(unsigned char key, int x, int y) // x and y is mouse location upon 
 		if (!(keys & KEY_DOWN))
 			keys |= KEY_DOWN; break;
 
-	// LIGHT MOVEMENT
+		// LIGHT MOVEMENT
 	case 'i':
 		if (!(keys & KEY_ALT_FORWARD))
 			keys |= KEY_ALT_FORWARD; break;
@@ -1437,7 +1521,7 @@ void keyUp(unsigned char key, int x, int y) // x and y is mouse location upon ke
 		keys &= ~KEY_UP; break;
 	case 'f':
 		keys &= ~KEY_DOWN; break;
-	
+
 	case 'i':
 		keys &= ~KEY_ALT_FORWARD; break;
 	case 'k':
@@ -1496,12 +1580,13 @@ void mouseClick(int btn, int state, int x, int y)
 void clean()
 {
 	cout << "Cleaning up!" << endl;
-	
+
 	glDeleteTextures(1, &kBlankTexture);
 	glDeleteTextures(1, &kGroundTexture);
 	glDeleteTextures(1, &kHedgeTexture);
 	glDeleteTextures(1, &kRoomTexture);
 	glDeleteTextures(1, &kWallTexture);
+	glDeleteTextures(1, &kCrystalTexture);
 	glDeleteTextures(1, &kTowerTexture);
 	glDeleteTextures(1, &mTowerRoofTexture);
 	glDeleteTextures(1, &mTowerTexture);
@@ -1538,7 +1623,7 @@ int main(int argc, char** argv)
 
 	glutMouseFunc(mouseClick);
 	glutMotionFunc(mouseMove); // Requires click to register.
-	
+
 	atexit(clean); // This GLUT function calls specified function before terminating program. Useful!
 
 	glutMainLoop();
