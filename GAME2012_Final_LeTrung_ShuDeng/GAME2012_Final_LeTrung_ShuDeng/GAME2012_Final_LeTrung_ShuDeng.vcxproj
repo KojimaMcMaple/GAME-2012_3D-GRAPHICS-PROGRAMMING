@@ -94,10 +94,6 @@
     <ClInclude Include="Shape.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="blank.jpg" />
-    <Image Include="chainmail.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="triangles.frag" />
     <None Include="triangles.vert" />
   </ItemGroup>

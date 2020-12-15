@@ -203,7 +203,7 @@ struct Grid : public Shape // Flat grid on ground. Starts at 0,0,0 and increases
 };
 struct Cube : public Shape
 {
-	Cube(int scale = 1)
+	Cube(int scale = 1, float textureScaleX = 1.0f, float textureScaleY = 1.0f, float textureScaleZ = 1.0f)
 	{
 		// Normal cube, no cloned vertices:
 		//shape_indices = {
@@ -339,39 +339,72 @@ struct Cube : public Shape
 		shape_uvs = {
 			// Front.
 			0.0f, 0.0f, 	// 0.
-			1.0f, 0.0f, 	// 1.
-			1.0f, 1.0f, 	// 2.
-			0.0f, 1.0f,		// 3.
+			textureScaleX, 0.0f, 	// 1.
+			textureScaleX, textureScaleY, 	// 2.
+			0.0f, textureScaleY,		// 3.
 			// Right.
+			0.0f, textureScaleZ,		// 2.
 			0.0f, 0.0f, 	// 1.
-			1.0f, 0.0f, 	// 5.
-			1.0f, 1.0f, 	// 6.
-			0.0f, 1.0f,		// 2.
+			textureScaleY, 0.0f, 	// 5.
+			textureScaleY, textureScaleZ, 	// 6.			
 			// Back.
 			0.0f, 0.0f, 	// 5.
-			1.0f, 0.0f, 	// 4.
-			1.0f, 1.0f,		// 7.
-			0.0f, 1.0f,		// 6.
+			textureScaleX, 0.0f, 	// 4.
+			textureScaleX, textureScaleY,		// 7.
+			0.0f, textureScaleY,		// 6.
 			// Left.
 			0.0f, 0.0f,		// 4.
-			1.0f, 0.0f,		// 0.
-			1.0f, 1.0f,		// 3.
-			0.0f, 1.0f,		// 7.
+			0.0f, textureScaleZ,		// 7.
+			textureScaleY, textureScaleZ,		// 3.
+			textureScaleY, 0.0f,		// 0.
 			// Top.
 			0.0f, 0.0f,		// 7.
-			1.0f, 0.0f,		// 3.
-			1.0f, 1.0f,		// 2.
-			0.0f, 1.0f,		// 6.
+			0.0f, textureScaleZ,		// 6.
+			textureScaleX, textureScaleZ,		// 2.
+			textureScaleX, 0.0f,		// 3.
 			// Bottom.
 			0.0f, 0.0f,		// 4.
-			1.0f, 0.0f,		// 5.
-			1.0f, 1.0f,		// 1.
-			0.0f, 1.0f		// 0.
-		};
-		for (unsigned i = 0; i < shape_uvs.size(); i++)
-			shape_uvs[i] *= scale;
+			textureScaleX, 0.0f,		// 5.
+			textureScaleX, textureScaleZ,		// 1.
+			0.0f, textureScaleZ		// 0.
+		};			
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
+	}
+	void SetTextureScale(float textureScaleX, float textureScaleY, float textureScaleZ)
+	{
+		shape_uvs = {
+			// Front.
+			0.0f, 0.0f, 	// 0.
+			textureScaleX, 0.0f, 	// 1.
+			textureScaleX, textureScaleY, 	// 2.
+			0.0f, textureScaleY,		// 3.
+			// Right.
+			0.0f, textureScaleZ,		// 2.
+			0.0f, 0.0f, 	// 1.
+			textureScaleY, 0.0f, 	// 5.
+			textureScaleY, textureScaleZ, 	// 6.			
+			// Back.
+			0.0f, 0.0f, 	// 5.
+			textureScaleX, 0.0f, 	// 4.
+			textureScaleX, textureScaleY,		// 7.
+			0.0f, textureScaleY,		// 6.
+			// Left.
+			0.0f, 0.0f,		// 4.
+			0.0f, textureScaleZ,		// 7.
+			textureScaleY, textureScaleZ,		// 3.
+			textureScaleY, 0.0f,		// 0.
+			// Top.
+			0.0f, 0.0f,		// 7.
+			0.0f, textureScaleZ,		// 6.
+			textureScaleX, textureScaleZ,		// 2.
+			textureScaleX, 0.0f,		// 3.
+			// Bottom.
+			0.0f, 0.0f,		// 4.
+			textureScaleX, 0.0f,		// 5.
+			textureScaleX, textureScaleZ,		// 1.
+			0.0f, textureScaleZ		// 0.
+		};
 	}
 };
 
@@ -560,7 +593,7 @@ struct Prism : public Shape
 
 struct Cone : public Shape
 {
-	Cone(int sides)
+	Cone(int sides, float textureScale = 1.0f)
 	{
 		float theta = 0.0f;
 		// Bottom face.
@@ -602,7 +635,7 @@ struct Cone : public Shape
 		shape_uvs.push_back(0.0f);
 		for (int i = 0; i < sides; i++)
 		{
-			shape_uvs.push_back(static_cast<GLfloat>(i) / sides);
+			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScale / sides);
 			shape_uvs.push_back(0.0f);
 		}
 		// Top Point
