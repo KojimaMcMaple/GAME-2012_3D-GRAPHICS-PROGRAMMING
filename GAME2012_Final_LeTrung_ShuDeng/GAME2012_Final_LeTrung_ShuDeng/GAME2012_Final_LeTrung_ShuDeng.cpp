@@ -108,7 +108,7 @@ Cube castleWall;
 // CRYSTAL KEY
 Crystal kCrystalKey(1);
 float kCrystalRotAngle = 0.0f;
-glm::vec3 kCrystalScale = glm::vec3(0.25f, 0.25f, 0.25f);
+glm::vec3 kCrystalScale = glm::vec3(0.2f, 0.2f, 0.2f);
 glm::vec3 kCrystalPos = glm::vec3(26.5f, 0.5f, -14.5f);
 bool kIsCrystalActive = true;
 
@@ -118,7 +118,7 @@ glm::vec3 kReceptorPos = glm::vec3(15.5f, 0.0f, -15.5f);
 bool kIsReceptorActive = false;
 
 // MAZE
-glm::vec3 kExitPoint = glm::vec3(14.5f, 0.5f, -27.0f);
+glm::vec3 kExitPoint = glm::vec3(14.5f, 0.5f, -27.0f); //green light
 const float kMazeWallThickness = 0.2f;
 const int kMazeHorizontalSize = 304;
 const int kMazeVerticalSize = 318;
@@ -857,6 +857,12 @@ glm::vec3 kMazeRoomRoofCoords[kMazeRoomRoofSize] = {
 		glm::vec3(14.0f, 0.0f, -13.0f), //14
 };
 
+// CASTLE WALL TOPS
+const float kCastleWallTopThickness = 0.1f;
+const int kCastleWallTopSize = 28;
+const int kCastleWallTopMerlonSize = 84;
+Wall kCastleWallTop(kCastleWallTopThickness, 1);
+
 //******************************************************************** 
 // FUNCTIONS 
 //********************************************************************
@@ -1023,35 +1029,7 @@ void LoadTexture() {
 	glUniform1i(glGetUniformLocation(program, "texture0"), 0);
 }
 
-void init(void)
-{
-	srand((unsigned)time(NULL));
-	//Specifying the name of vertex and fragment shaders.
-	ShaderInfo shaders[] = {
-		{ GL_VERTEX_SHADER, "triangles.vert" },
-		{ GL_FRAGMENT_SHADER, "triangles.frag" },
-		{ GL_NONE, NULL }
-	};
-
-	//Loading and compiling shaders
-	program = LoadShaders(shaders);
-	glUseProgram(program);	//My Pipeline is set up
-
-	modelID = glGetUniformLocation(program, "model");
-	projID = glGetUniformLocation(program, "projection");
-	viewID = glGetUniformLocation(program, "view");
-
-	// Projection matrix : 45∞ Field of View, aspect ratio, display range : 0.1 unit <-> 100 units
-	Projection = glm::perspective(glm::radians(45.0f), 1.0f / 1.0f, 0.1f, 100.0f);
-	// Or, for an ortho camera :
-	// Projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 100.0f); // In world coordinates
-
-	// Camera matrix
-	resetView();
-
-	// Image loading.
-	LoadTexture();
-
+void SetUpLights() {
 	// Setting ambient Light.
 	glUniform3f(glGetUniformLocation(program, "aLight.ambientColour"), aLight.ambientColour.x, aLight.ambientColour.y, aLight.ambientColour.z);
 	glUniform1f(glGetUniformLocation(program, "aLight.ambientStrength"), aLight.ambientStrength);
@@ -1121,6 +1099,39 @@ void init(void)
 
 	glUniform3f(glGetUniformLocation(program, "sLight.direction"), sLight.direction.x, sLight.direction.y, sLight.direction.z);
 	glUniform1f(glGetUniformLocation(program, "sLight.edge"), sLight.edgeRad);
+}
+
+void init(void)
+{
+	srand((unsigned)time(NULL));
+	//Specifying the name of vertex and fragment shaders.
+	ShaderInfo shaders[] = {
+		{ GL_VERTEX_SHADER, "triangles.vert" },
+		{ GL_FRAGMENT_SHADER, "triangles.frag" },
+		{ GL_NONE, NULL }
+	};
+
+	//Loading and compiling shaders
+	program = LoadShaders(shaders);
+	glUseProgram(program);	//My Pipeline is set up
+
+	modelID = glGetUniformLocation(program, "model");
+	projID = glGetUniformLocation(program, "projection");
+	viewID = glGetUniformLocation(program, "view");
+
+	// Projection matrix : 45∞ Field of View, aspect ratio, display range : 0.1 unit <-> 100 units
+	Projection = glm::perspective(glm::radians(45.0f), 1.0f / 1.0f, 0.1f, 100.0f);
+	// Or, for an ortho camera :
+	// Projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 100.0f); // In world coordinates
+
+	// Camera matrix
+	resetView();
+
+	// Image loading.
+	LoadTexture();
+
+	// SETUP LIGHTS
+	SetUpLights();
 
 	vao = 0;
 	glGenVertexArrays(1, &vao);
@@ -1182,7 +1193,6 @@ void init(void)
 	}
 
 	timer(0);
-
 }
 
 //---------------------------------------------------------------------
@@ -1242,10 +1252,10 @@ void DisplayGround() {
 }
 
 void DisplayMaze(float x_offset = 0.0f, float z_offset = 0.0f) {
+	glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
 
 	for (int i = 0; i < kMazeHorizontalSize; i++) {
 		float z_local_offset = 0.0f; // value is half thickness of wall, to center wall
-		glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
 		kMazeHorizontal[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(kMazeHorizontalCoords[i].x + x_offset,
 			kMazeHorizontalCoords[i].y,
@@ -1254,7 +1264,6 @@ void DisplayMaze(float x_offset = 0.0f, float z_offset = 0.0f) {
 	}
 	for (int i = 0; i < kMazeVerticalSize; i++) {
 		float x_local_offset = -kMazeWallThickness / 2; // value is half thickness of wall, to center wall
-		glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
 		kMazeVertical[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), Y_AXIS, 90.0f, glm::vec3(kMazeVerticalCoords[i].x + x_offset + x_local_offset,
 			kMazeVerticalCoords[i].y,
@@ -1264,10 +1273,11 @@ void DisplayMaze(float x_offset = 0.0f, float z_offset = 0.0f) {
 }
 
 void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
+	glBindTexture(GL_TEXTURE_2D, kRoomTexture);
+	
 	float scale = 1.25f;
 	for (int i = 0; i < kMazeRoomHorizontalSize; i++) {
 		float z_local_offset = 0.0f; // offset to prevent overlaps, vertical maze walls are centered
-		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomHorizontal[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		if (i < (kMazeRoomHorizontalSize >> 1)) { //bottom walls 
 			z_local_offset = -kMazeWallThickness; //-0.2
@@ -1283,7 +1293,6 @@ void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
 	for (int i = 0; i < kMazeRoomVerticalSize; i++) {
 		float x_local_offset = 0.0f; // value is half thickness of wall, to center wall
 		float z_local_offset = kMazeRoomWallThickness / 2; // offset to prevent overlaps, vertical maze walls are centered
-		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomVertical[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		if (i < (kMazeRoomVerticalSize >> 1)) { //left walls 
 			x_local_offset = kMazeWallThickness / 2; //-0.2d
@@ -1298,7 +1307,6 @@ void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
 	}
 	for (int i = 0; i < kMazeRoomRoofSize; i++) {
 		float z_local_offset = kMazeRoomWallThickness / 2; // offset to prevent overlaps, vertical maze walls are centered
-		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomRoof[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(kMazeRoomRoofCoords[i].x + x_offset,
 			kMazeRoomRoofCoords[i].y + scale,
@@ -1307,7 +1315,6 @@ void DisplayMazeRoom(float x_offset = 0.0f, float z_offset = 0.0f) {
 	}
 	for (int i = 0; i < kMazeRoomRoofSize; i++) {
 		float z_local_offset = kMazeRoomWallThickness / 2; // offset to prevent overlaps, vertical maze walls are centered
-		glBindTexture(GL_TEXTURE_2D, kRoomTexture);
 		kMazeRoomFloor[i].BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 		transformObject(glm::vec3(1.0f, 1.0f, 1.0f), X_AXIS, -90.0f, glm::vec3(kMazeRoomRoofCoords[i].x + x_offset,
 			kMazeRoomRoofCoords[i].y,
@@ -1414,6 +1421,208 @@ void DisplayCastleWallsGatehouse()
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 }
 
+void DisplayCastleWallTop() {
+	glBindTexture(GL_TEXTURE_2D, kWallTexture);
+	
+	// FRONT OUTER
+	float x_offset = 1.0f;
+	float y_offset = 2.0f;
+	float z_offset = -0.3f;
+	float x_coord = 0.0f;
+	float y_coord = 0.0f;
+	float z_coord = 0.0f;
+	float y_merlon_offset = 0.25f; // wall height
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		if (i < ((kCastleWallTopSize >> 1) - 2) || i > ((kCastleWallTopSize >> 1))) { // avoid flickering at center, overlaps w/ gate
+			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+			transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+				y_coord + y_offset,
+				z_coord + z_offset));
+			glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		}
+		
+		x_coord += 1.0f;
+	}
+	x_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 2)) { // avoid flickering at center, overlaps w/ gate
+			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+			transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+				y_coord + y_offset + y_merlon_offset,
+				z_coord + z_offset));
+			glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		}
+		x_coord += 0.33333f;
+	}
+
+
+	// FRONT INNER
+	x_coord = 0.0f;
+	z_offset = -0.8f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		if (i < ((kCastleWallTopSize >> 1) - 2) || i >((kCastleWallTopSize >> 1))) { // avoid flickering at center, overlaps w/ gate
+			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+			transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+				y_coord + y_offset,
+				z_coord + z_offset));
+			glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		}
+		x_coord += 1.0f;
+	}
+	x_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 2)) { // avoid flickering at center, overlaps w/ gate
+			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+			transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+				y_coord + y_offset + y_merlon_offset,
+				z_coord + z_offset));
+			glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		}
+		x_coord += 0.33333f;
+	}
+	
+	// BACK OUTER
+	x_coord = 0.0f;
+	z_offset = -29.8f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		x_coord += 1.0f;
+	}
+	x_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		x_coord += 0.33333f;
+	}
+	
+	// BACK INNER
+	x_coord = 0.0f;
+	z_offset = -29.3f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		x_coord += 1.0f;
+	}
+	x_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		x_coord += 0.33333f;
+	}
+	
+	// LEFT OUTER
+	x_offset = 0.25f;
+	z_offset = -1.0f;
+	x_coord = 0.0f;
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 1.0f;
+	}
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 0.33333f;
+	}
+	
+	// LEFT INNER
+	x_offset = 0.75f;
+	x_coord = 0.0f;
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 1.0f;
+	}
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 0.33333f;
+	}
+	
+	// RIGHT OUTER
+	x_offset =29.25f;
+	x_coord = 0.0f;
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 1.0f;
+	}
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 0.33333f;
+	}
+	
+	// RIGHT INNER
+	x_offset = 29.75f;
+	x_coord = 0.0f;
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(1.0f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 1.0f;
+	}
+	z_coord = 0.0f;
+	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
+		float x_local_offset = -kCastleWallTopThickness / 2; // value is half thickness of wall, to center wall
+		kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+		transformObject(glm::vec3(0.25f, 0.25f, 1.0f), Y_AXIS, 90.0f, glm::vec3(x_coord + x_offset + x_local_offset,
+			y_coord + y_offset + y_merlon_offset,
+			z_coord + z_offset));
+		glDrawElements(GL_TRIANGLES, kCastleWallTop.NumIndices(), GL_UNSIGNED_SHORT, 0);
+		z_coord -= 0.33333f;
+	}
+
+
+}
+
 void DisplayStairs()
 {
 	glBindTexture(GL_TEXTURE_2D, kStairTexture);
@@ -1510,6 +1719,7 @@ void display(void)
 
 	// CASTLE WALLS
 	DisplayCastleWallsGatehouse();
+	DisplayCastleWallTop();
 
 	// STAIRS
 	DisplayStairs();

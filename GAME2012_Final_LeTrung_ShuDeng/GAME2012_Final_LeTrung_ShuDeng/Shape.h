@@ -473,8 +473,8 @@ struct Wall : public Shape
 			0.0f, 1.0f,		// 3.
 			// Right.
 			0.0f, 0.0f, 	// 1.
-			1.0f, 0.0f, 	// 5.
-			1.0f, 1.0f, 	// 6.
+			depth, 0.0f, 	// 5.
+			depth, 1.0f, 	// 6.
 			0.0f, 1.0f,		// 2.
 			// Back.
 			0.0f, 0.0f, 	// 5.
@@ -483,19 +483,19 @@ struct Wall : public Shape
 			0.0f, 1.0f,		// 6.
 			// Left.
 			0.0f, 0.0f,		// 4.
-			1.0f, 0.0f,		// 0.
-			1.0f, 1.0f,		// 3.
+			depth, 0.0f,		// 0.
+			depth, 1.0f,		// 3.
 			0.0f, 1.0f,		// 7.
 			// Top.
 			0.0f, 0.0f,		// 7.
-			1.0f, 0.0f,		// 3.
-			1.0f, 1.0f,		// 2.
+			depth, 0.0f,		// 3.
+			depth, 1.0f,		// 2.
 			0.0f, 1.0f,		// 6.
 			// Bottom.
 			0.0f, 0.0f,		// 4.
 			1.0f, 0.0f,		// 5.
-			1.0f, 1.0f,		// 1.
-			0.0f, 1.0f		// 0.
+			1.0f, depth,		// 1.
+			0.0f, depth		// 0.
 		};
 		for (unsigned i = 0; i < shape_uvs.size(); i++)
 			shape_uvs[i] *= scale;
