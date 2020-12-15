@@ -69,7 +69,7 @@ int lastX, lastY;
 
 // Texture variables.
 GLuint kBlankTexture, kGroundTexture, kHedgeTexture, kRoomTexture,
-	kWallTexture, kTowerTexture,
+	kWallTexture, kStairTexture, kCrystalTexture,
 	kTowerRoofTexture, kTowerBaseTexture, kGateTexture;
 GLint width, height, bitDepth;
 
@@ -964,33 +964,33 @@ void LoadTexture() {
 	//glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(image4);
 
-	// TOWER TEXTURE 1
-	unsigned char* image5 = stbi_load("TexturesCom_BrickOldOvergrown0006_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
-	if (!image5) cout << "Unable to load file!" << endl;
-	glGenTextures(1, &kTowerTexture);
-	glBindTexture(GL_TEXTURE_2D, kTowerTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image5);
+	// STAIR TEXTURE
+	unsigned char* stairTex = stbi_load("TexturesCom_BrickOldOvergrown0006_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	if (!stairTex) cout << "Unable to load file!" << endl;
+	glGenTextures(1, &kStairTexture);
+	glBindTexture(GL_TEXTURE_2D, kStairTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, stairTex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, 0);
-	stbi_image_free(image5);
+	stbi_image_free(stairTex);
 
-	// TOWER TEXTURE 2
-	unsigned char* towerTex2 = stbi_load("TexturesCom_BrickOldMixedSize0064_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
-	if (!towerTex2) cout << "Unable to load file!" << endl;
+	// TOWER TEXTURE
+	unsigned char* towerTex = stbi_load("TexturesCom_BrickOldMixedSize0064_1_seamless_S.jpg", &width, &height, &bitDepth, 0);
+	if (!towerTex) cout << "Unable to load file!" << endl;
 	glGenTextures(1, &kTowerBaseTexture);
 	glBindTexture(GL_TEXTURE_2D, kTowerBaseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, towerTex2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, towerTex);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	//glBindTexture(GL_TEXTURE_2D, 0);
-	stbi_image_free(towerTex2);
+	stbi_image_free(towerTex);
 
 	// TOWER ROOF TEXTURE
 	unsigned char* towerRoofTex = stbi_load("TexturesCom_RooftilesSlate0159_5_seamless_S.jpg", &width, &height, &bitDepth, 0);
@@ -1329,13 +1329,14 @@ void DisplayTowers() {
 	transformObject(glm::vec3(2.0f, 0.5f, 2.0f), X_AXIS, 0.0f, glm::vec3(28.5f, 3.0f, -30.5f));
 	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	// Gatehouse roofs
-	transformObject(glm::vec3(2.0f, 0.5f, 2.0f), X_AXIS, 0.0f, glm::vec3(12.5f, 3.0f, -1.75f));
+	transformObject(glm::vec3(2.0f, 0.5f, 2.0f), X_AXIS, 0.0f, glm::vec3(12.5f, 3.0f, -1.85f));
 	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
-	transformObject(glm::vec3(2.0f, 0.5f, 2.0f), X_AXIS, 0.0f, glm::vec3(15.5f, 3.0f, -1.75f));
+	transformObject(glm::vec3(2.0f, 0.5f, 2.0f), X_AXIS, 0.0f, glm::vec3(15.5f, 3.0f, -1.85f));
 	glDrawElements(GL_TRIANGLES, roof.NumIndices(), GL_UNSIGNED_SHORT, 0);
 
 	glBindTexture(GL_TEXTURE_2D, kTowerBaseTexture);
 	// Tower upper base
+	baseTower.SetTextureScale(1.0f, 3.0f);
 	baseTower.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(-0.25f, 2.0f, -1.25f));
 	glDrawElements(GL_TRIANGLES, baseTower.NumIndices(), GL_UNSIGNED_SHORT, 0);
@@ -1346,13 +1347,15 @@ void DisplayTowers() {
 	transformObject(glm::vec3(1.5f, 1.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(28.75f, 2.0f, -30.25f));
 	glDrawElements(GL_TRIANGLES, baseTower.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	// Gatehouse base
+	baseGatehouse.SetTextureScale(3.0f, 3.0f);
 	baseGatehouse.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.5f, 3.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(12.75f, 0.0f, -1.5f));
+	transformObject(glm::vec3(1.5f, 3.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(12.75f, 0.0f, -1.6f));
 	glDrawElements(GL_TRIANGLES, baseGatehouse.NumIndices(), GL_UNSIGNED_SHORT, 0);
-	transformObject(glm::vec3(1.5f, 3.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(15.75f, 0.0f, -1.5f));
+	transformObject(glm::vec3(1.5f, 3.0f, 1.5f), X_AXIS, 0.0f, glm::vec3(15.75f, 0.0f, -1.6f));
 	glDrawElements(GL_TRIANGLES, baseGatehouse.NumIndices(), GL_UNSIGNED_SHORT, 0);
 
 	// Tower lower base
+	baseTower.SetTextureScale(2.0f, 2.5f);
 	baseTower.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 	transformObject(glm::vec3(1.0f, 2.0f, 1.0f), X_AXIS, 0.0f, glm::vec3(0.0f, 0.0f, -1.0f));
 	glDrawElements(GL_TRIANGLES, baseTower.NumIndices(), GL_UNSIGNED_SHORT, 0);
@@ -1389,41 +1392,74 @@ void DisplayCastleWallsGatehouse()
 	// Gatehouse wall
 	castleWall.SetTextureScale(3.0f, 1.0f, 0.6f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(3.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 1.5f, -0.8f));  // Upper
+	transformObject(glm::vec3(3.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 1.5f, -1.6f));  // Upper
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	castleWall.SetTextureScale(3.0f, 0.5f, 0.6f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(3.0f, 0.5f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.8f));  // Lower
+	transformObject(glm::vec3(3.0f, 0.5f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -1.6f));  // Lower
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	castleWall.SetTextureScale(1.0f, 1.0f, 0.6f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.5f, -0.8f));  // Middle Left
+	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.5f, -1.6f));  // Middle Left
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	castleWall.SetTextureScale(1.0f, 1.0f, 0.6f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(15.5f, 0.5f, -0.8f));  // Middle Right
+	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(15.5f, 0.5f, -1.6f));  // Middle Right
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 	// Gate
 	glBindTexture(GL_TEXTURE_2D, kGateTexture);
 	castleWall.SetTextureScale(1.0f, 1.0f, 0.6f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(14.5f, 0.5f, -0.8f));
+	transformObject(glm::vec3(1.0f, 1.0f, 0.6f), X_AXIS, 0.0f, glm::vec3(14.5f, 0.5f, -1.6f));
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 }
 
 void DisplayStairs()
 {
-	glBindTexture(GL_TEXTURE_2D, kHedgeTexture);
-
+	glBindTexture(GL_TEXTURE_2D, kStairTexture);
+	// Front side
 	castleWall.SetTextureScale(3.0f, 0.5f, 0.2f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(3.0f, 0.5f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.8f));
+	transformObject(glm::vec3(3.0f, 0.5f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -1.0f));
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
-	castleWall.SetTextureScale(3.0f, 0.5f, 0.2f);
+	castleWall.SetTextureScale(3.0f, 0.4f, 0.2f);
 	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
-	transformObject(glm::vec3(3.0f, 0.5f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.8f));
+	transformObject(glm::vec3(3.0f, 0.4f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.8f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.3f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.3f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.6f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.2f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.2f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.4f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.1f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.1f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -0.2f));
 	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 
+	// Back side
+	castleWall.SetTextureScale(3.0f, 0.5f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.5f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -1.8f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.4f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.4f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -2.0f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.3f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.3f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -2.2f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.2f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.2f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -2.4f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
+	castleWall.SetTextureScale(3.0f, 0.1f, 0.2f);
+	castleWall.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
+	transformObject(glm::vec3(3.0f, 0.1f, 0.2f), X_AXIS, 0.0f, glm::vec3(13.5f, 0.0f, -2.6f));
+	glDrawElements(GL_TRIANGLES, castleWall.NumIndices(), GL_UNSIGNED_SHORT, 0);
 }
 
 void DisplayCrystal() {
@@ -1685,7 +1721,7 @@ void clean()
 	glDeleteTextures(1, &kRoomTexture);
 	glDeleteTextures(1, &kWallTexture);
 	glDeleteTextures(1, &kCrystalTexture);
-	glDeleteTextures(1, &kTowerTexture);
+	glDeleteTextures(1, &kStairTexture);
 	glDeleteTextures(1, &kTowerRoofTexture);
 	glDeleteTextures(1, &kTowerBaseTexture);
 

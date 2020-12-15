@@ -201,6 +201,7 @@ struct Grid : public Shape // Flat grid on ground. Starts at 0,0,0 and increases
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
 	}
 };
+
 struct Cube : public Shape
 {
 	Cube(int scale = 1, float textureScaleX = 1.0f, float textureScaleY = 1.0f, float textureScaleZ = 1.0f)
@@ -343,10 +344,10 @@ struct Cube : public Shape
 			textureScaleX, textureScaleY, 	// 2.
 			0.0f, textureScaleY,		// 3.
 			// Right.
-			0.0f, textureScaleZ,		// 2.
 			0.0f, 0.0f, 	// 1.
-			textureScaleY, 0.0f, 	// 5.
-			textureScaleY, textureScaleZ, 	// 6.			
+			textureScaleZ, 0.0f, 	// 5.	
+			textureScaleZ, textureScaleY, 	// 6.
+			0.0f, textureScaleY,		// 2.		
 			// Back.
 			0.0f, 0.0f, 	// 5.
 			textureScaleX, 0.0f, 	// 4.
@@ -354,19 +355,19 @@ struct Cube : public Shape
 			0.0f, textureScaleY,		// 6.
 			// Left.
 			0.0f, 0.0f,		// 4.
-			0.0f, textureScaleZ,		// 7.
-			textureScaleY, textureScaleZ,		// 3.
-			textureScaleY, 0.0f,		// 0.
+			textureScaleZ, 0.0f,		// 0.
+			textureScaleZ, textureScaleY,		// 3.
+			0.0f, textureScaleY,		// 7.
 			// Top.
 			0.0f, 0.0f,		// 7.
-			0.0f, textureScaleZ,		// 6.
-			textureScaleX, textureScaleZ,		// 2.
-			textureScaleX, 0.0f,		// 3.
+			textureScaleZ,	0.0f,	// 6.
+			textureScaleZ, textureScaleX,		// 2.
+			0.0f, textureScaleX,		// 3.
 			// Bottom.
-			0.0f, 0.0f,		// 4.
-			textureScaleX, 0.0f,		// 5.
-			textureScaleX, textureScaleZ,		// 1.
-			0.0f, textureScaleZ		// 0.
+			0.0f, 0.0f,		// 7.
+			textureScaleZ,	0.0f,	// 6.
+			textureScaleZ, textureScaleX,		// 2.
+			0.0f, textureScaleX,		// 3.
 		};			
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
@@ -380,10 +381,10 @@ struct Cube : public Shape
 			textureScaleX, textureScaleY, 	// 2.
 			0.0f, textureScaleY,		// 3.
 			// Right.
-			0.0f, textureScaleZ,		// 2.
 			0.0f, 0.0f, 	// 1.
-			textureScaleY, 0.0f, 	// 5.
-			textureScaleY, textureScaleZ, 	// 6.			
+			textureScaleZ, 0.0f, 	// 5.	
+			textureScaleZ, textureScaleY, 	// 6.
+			0.0f, textureScaleY,		// 2.		
 			// Back.
 			0.0f, 0.0f, 	// 5.
 			textureScaleX, 0.0f, 	// 4.
@@ -391,19 +392,19 @@ struct Cube : public Shape
 			0.0f, textureScaleY,		// 6.
 			// Left.
 			0.0f, 0.0f,		// 4.
-			0.0f, textureScaleZ,		// 7.
-			textureScaleY, textureScaleZ,		// 3.
-			textureScaleY, 0.0f,		// 0.
+			textureScaleZ, 0.0f,		// 0.
+			textureScaleZ, textureScaleY,		// 3.
+			0.0f, textureScaleY,		// 7.
 			// Top.
 			0.0f, 0.0f,		// 7.
-			0.0f, textureScaleZ,		// 6.
-			textureScaleX, textureScaleZ,		// 2.
-			textureScaleX, 0.0f,		// 3.
+			textureScaleZ,	0.0f,	// 6.
+			textureScaleZ, textureScaleX,		// 2.
+			0.0f, textureScaleX,		// 3.
 			// Bottom.
-			0.0f, 0.0f,		// 4.
-			textureScaleX, 0.0f,		// 5.
-			textureScaleX, textureScaleZ,		// 1.
-			0.0f, textureScaleZ		// 0.
+			0.0f, 0.0f,		// 7.
+			textureScaleZ,	0.0f,	// 6.
+			textureScaleZ, textureScaleX,		// 2.
+			0.0f, textureScaleX,		// 3.
 		};
 	}
 };
@@ -505,89 +506,105 @@ struct Wall : public Shape
 
 struct Prism : public Shape
 {
-	Prism(int sides)
+	int property_sides;
+	Prism(int sides, float textureScaleAxial = 1.0f, float textureScaleRadial = 1.0f)
 	{
+		property_sides = sides;
 		float theta = 0.0f;
 		// Top face.
 		shape_vertices.push_back(0.5f);
 		shape_vertices.push_back(1.0f);
 		shape_vertices.push_back(0.5f);
-		for (int i = 0; i < sides; ++i)
+		for (int i = 0; i <= sides; ++i)
 		{
 			shape_vertices.push_back(0.5f + 0.5f * cos(theta));
 			shape_vertices.push_back(1.0f);
 			shape_vertices.push_back(0.5f + 0.5f * sin(theta));
 			theta += 2 * PI / sides;
 		}
+		theta = 0.0f;
 		// Bottom face.
 		shape_vertices.push_back(0.5f);
 		shape_vertices.push_back(0.0f);
 		shape_vertices.push_back(0.5f);
-		for (int i = 0; i < sides; ++i)
+		for (int i = 0; i <= sides; ++i)
 		{
 			shape_vertices.push_back(0.5f + 0.5f * cos(theta));
 			shape_vertices.push_back(0.0f);
 			shape_vertices.push_back(0.5f + 0.5f * sin(theta));
 			theta += 2 * PI / sides;
 		}
+
 		// Indices now.
 		// Bottom face.
-		for (int i = sides + 1; i < sides * 2; i++)
+		for (int i = sides + 2; i < (sides + 1) * 2; i++)
 		{
-			shape_indices.push_back(sides + 1);
+			shape_indices.push_back(sides + 2);
 			shape_indices.push_back(i + 1);
 			shape_indices.push_back(i + 2);
 		}
-		shape_indices.push_back(sides + 1);
-		shape_indices.push_back(sides * 2 + 1);
-		shape_indices.push_back(sides + 2);
 		// Middle faces.
-		for (int i = 1; i < sides; i++)
+		for (int i = 1; i <= sides; i++)
 		{
 			// Triangle one.
 			shape_indices.push_back(i);
 			shape_indices.push_back(i+1);
-			shape_indices.push_back(sides + i + 2);
+			shape_indices.push_back(sides + i + 3);
 			// Triangle two.
+			shape_indices.push_back(sides + i + 3);
 			shape_indices.push_back(sides + i + 2);
-			shape_indices.push_back(sides + i + 1);
 			shape_indices.push_back(i);
 		}
-		shape_indices.push_back(sides);
-		shape_indices.push_back(1);
-		shape_indices.push_back(sides + 2);
-		shape_indices.push_back(sides + 2);
-		shape_indices.push_back(sides * 2 + 1);
-		shape_indices.push_back(sides);
 		// Top face.
-		for (int i = 1; i < sides; i++)
+		for (int i = 1; i <= sides; i++)
 		{
 			shape_indices.push_back(0);
 			shape_indices.push_back(i + 1);
 			shape_indices.push_back(i);
 		}
-		shape_indices.push_back(0);
-		shape_indices.push_back(1);
-		shape_indices.push_back(sides);
+
 		// UVs
 		// Top face.
 		shape_uvs.push_back(0.0f);
 		shape_uvs.push_back(0.0f);
-		for (int i = 0; i < sides; ++i)
+		for (int i = 0; i <= sides; ++i)
 		{
-			shape_uvs.push_back(static_cast<GLfloat>(i)/ sides);
-			shape_uvs.push_back(1.0f);
+			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScaleRadial / sides);
+			shape_uvs.push_back(textureScaleAxial);
 		}
 		// Bottom face.
 		shape_uvs.push_back(0.0f);
 		shape_uvs.push_back(0.0f);
-		for (int i = 0; i < sides; ++i)
+		for (int i = 0; i <= sides; ++i)
 		{
-			shape_uvs.push_back(static_cast<GLfloat>(i) / sides);
+			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScaleRadial / sides);
 			shape_uvs.push_back(0.0f);
 		}
+
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
+	}
+
+	void SetTextureScale(float textureScaleAxial, float textureScaleRadial)
+	{
+		// UVs
+		// Top face.
+		shape_uvs.clear();
+		shape_uvs.push_back(0.0f);
+		shape_uvs.push_back(0.0f);
+		for (int i = 0; i <= property_sides; ++i)
+		{
+			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScaleRadial / property_sides);
+			shape_uvs.push_back(textureScaleAxial);
+		}
+		// Bottom face.
+		shape_uvs.push_back(0.0f);
+		shape_uvs.push_back(0.0f);
+		for (int i = 0; i <= property_sides; ++i)
+		{
+			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScaleRadial / property_sides);
+			shape_uvs.push_back(0.0f);
+		}
 	}
 };
 
@@ -600,7 +617,7 @@ struct Cone : public Shape
 		shape_vertices.push_back(0.5f);
 		shape_vertices.push_back(0.0f);
 		shape_vertices.push_back(0.5f);
-		for (int i = 0; i < sides; ++i)
+		for (int i = 0; i <= sides; ++i)
 		{
 			shape_vertices.push_back(0.5f + 0.5f * cos(theta));
 			shape_vertices.push_back(0.0f);
@@ -610,30 +627,26 @@ struct Cone : public Shape
 		shape_vertices.push_back(0.5f);
 		shape_vertices.push_back(1.0f);
 		shape_vertices.push_back(0.5f);
+
 		// Indices now. Bottom face.
-		for (int i = 1; i < sides; i++)
+		for (int i = 1; i <= sides; i++)
 		{
 			shape_indices.push_back(0);
 			shape_indices.push_back(i);
 			shape_indices.push_back(i + 1);
 		}
-		shape_indices.push_back(0);
-		shape_indices.push_back(sides);
-		shape_indices.push_back(1);
 		// Middle faces.
-		for (int i = 1; i < sides; i++)
+		for (int i = 1; i <= sides; i++)
 		{
 			shape_indices.push_back(i);
-			shape_indices.push_back(sides + 1);
+			shape_indices.push_back(sides + 2);
 			shape_indices.push_back(i + 1);
 		}
-		shape_indices.push_back(sides);
-		shape_indices.push_back(sides + 1);
-		shape_indices.push_back(1);
+
 		// UVs
-		shape_uvs.push_back(0.0f);
-		shape_uvs.push_back(0.0f);
-		for (int i = 0; i < sides; i++)
+		shape_uvs.push_back(0.5f);
+		shape_uvs.push_back(1.0f);
+		for (int i = 0; i <= sides; i++)
 		{
 			shape_uvs.push_back(static_cast<GLfloat>(i) * textureScale / sides);
 			shape_uvs.push_back(0.0f);
@@ -641,6 +654,7 @@ struct Cone : public Shape
 		// Top Point
 		shape_uvs.push_back(0.5f);
 		shape_uvs.push_back(1.0f);
+		
 		ColorShape(1.0f, 1.0f, 1.0f);
 		CalcAverageNormals(shape_indices, shape_indices.size(), shape_vertices, shape_vertices.size());
 	}
