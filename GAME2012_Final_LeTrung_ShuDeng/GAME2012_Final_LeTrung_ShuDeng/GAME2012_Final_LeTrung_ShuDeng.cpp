@@ -1433,7 +1433,7 @@ void DisplayCastleWallTop() {
 	float z_coord = 0.0f;
 	float y_merlon_offset = 0.25f; // wall height
 	for (int i = 0; i < kCastleWallTopSize; i++) {
-		if (i < ((kCastleWallTopSize >> 1) - 2) || i > ((kCastleWallTopSize >> 1))) { // avoid flickering at center, overlaps w/ gate
+		if (i < ((kCastleWallTopSize >> 1) - 2) || i > ((kCastleWallTopSize >> 1) + 1)) { // avoid flickering at center, overlaps w/ gate
 			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 			transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
 				y_coord + y_offset,
@@ -1445,7 +1445,7 @@ void DisplayCastleWallTop() {
 	}
 	x_coord = 0.0f;
 	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
-		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 2)) { // avoid flickering at center, overlaps w/ gate
+		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 4)) { // avoid flickering at center, overlaps w/ gate
 			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 			transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
 				y_coord + y_offset + y_merlon_offset,
@@ -1460,7 +1460,7 @@ void DisplayCastleWallTop() {
 	x_coord = 0.0f;
 	z_offset = -0.8f;
 	for (int i = 0; i < kCastleWallTopSize; i++) {
-		if (i < ((kCastleWallTopSize >> 1) - 2) || i >((kCastleWallTopSize >> 1))) { // avoid flickering at center, overlaps w/ gate
+		if (i < ((kCastleWallTopSize >> 1) - 2) || i >((kCastleWallTopSize >> 1) + 1)) { // avoid flickering at center, overlaps w/ gate
 			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 			transformObject(glm::vec3(1.0f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
 				y_coord + y_offset,
@@ -1471,7 +1471,7 @@ void DisplayCastleWallTop() {
 	}
 	x_coord = 0.0f;
 	for (int i = 0; i < kCastleWallTopMerlonSize; i++) {
-		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 2)) { // avoid flickering at center, overlaps w/ gate
+		if (i < ((kCastleWallTopMerlonSize >> 1) - 6) || i >((kCastleWallTopMerlonSize >> 1) + 4)) { // avoid flickering at center, overlaps w/ gate
 			kCastleWallTop.BufferShape(&ibo, &points_vbo, &colors_vbo, &uv_vbo, &normals_vbo, program);
 			transformObject(glm::vec3(0.25f, 0.25f, 1.0f), X_AXIS, 0.0f, glm::vec3(x_coord + x_offset,
 				y_coord + y_offset + y_merlon_offset,
